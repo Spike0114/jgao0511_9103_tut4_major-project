@@ -3,6 +3,8 @@ let moveRects = [];
 let pixelLength = 20;
 let yellowRegions = [];
 let squares = []
+let squaresMode = "homing"
+let homingProcess = 0;
 class MyRect {
   constructor(x, y, w, h, type) {
     this.x = x;
@@ -29,36 +31,89 @@ class MyRect {
   }
 }
 class Square {
+
   constructor(x, y, color) {
-    this.x = x
-    this.y = y
-    this.s = pixelLength
+    this.seed = random(9999)
+
+    this.col = x / pixelLength;
+    this.row = y / pixelLength;
+
+    this.fixedX = this.col * 12 - 300 + width / 2
+    this.fixedY = this.row * 12 - 300 + height / 2
+
+    this.currentX = this.col * 12 - 300 + width / 2
+    this.currentY = this.row * 12 - 300 + height / 2
+    this.initX = this.currentX
+    this.initY = this.currentY
+    this.s = 12
     this.color = color
-    this.spd = random(0.5, 1)
-    this.spdX = random(-1, 1) * this.spd
-    this.spdY = random(-1, 1) * this.spd
+
+    this.spd = random(2, 5)
+    this.tail = []
+
   }
 
   draw() {
     rectMode(CENTER)
+
+    if (frameCount % 5 == 0) {
+      this.tail.push({ x: this.currentX, y: this.currentY, alpha: 255 })
+    }
+
+    for (let i = 0; i < this.tail.length; i++) {
+
+      if (this.tail[i].alpha > 0) {
+
+        fill(this.color[0], this.color[1], this.color[2], this.tail[i].alpha)
+        rect(this.tail[i].x, this.tail[i].y, this.s);
+        this.tail[i].alpha -= 8
+      }
+    }
+
     push();
-    translate(this.x, this.y);
+    translate(this.currentX, this.currentY);
+
     noStroke();
     fill(this.color)
     rect(0, 0, this.s);
     pop();
   }
   flight() {
-    this.x += this.spdX
-    this.y += this.spdY
-    if (this.x < 0) {
-      this.x = width
-    } if (this.x > width) {
-      this.x = 0
-    } if (this.y < 0) {
-      this.y = height
-    } if (this.y > height) {
-      this.y = 0
+
+    let angle = map(noise(this.seed), 0, 1, 0, TWO_PI)
+    this.seed += 0.007
+
+    let spdX = cos(angle) * this.spd
+    let spdY = sin(angle) * this.spd
+
+    this.currentX += spdX
+    this.currentY += spdY
+
+    if (this.currentX < 0) {
+      this.currentX = width
+    } if (this.currentX > width) {
+      this.currentX = 0
+    } if (this.currentY < 0) {
+      this.currentY = height
+    } if (this.currentY > height) {
+      this.currentY = 0
+    }
+
+    this.initX = this.currentX
+    this.initY = this.currentY
+  }
+  homing() {
+
+    this.currentX = lerp(this.initX, this.fixedX, homingProcess)
+    this.currentY = lerp(this.initY, this.fixedY, homingProcess)
+  }
+  run() {
+
+    if (squaresMode == "homing") {
+      this.homing()
+    }
+    else if (squaresMode == "flight") {
+      this.flight()
     }
   }
 }
@@ -141,9 +196,11 @@ function setup() {
     detectYellowRegions();
     generateRandomRectangles();
   }
+
   for (let i = 0; i < moveRects.length; i++) {
     moveRects[i].draw();
   }
+
 
   for (let x = 0; x < 1000; x += pixelLength) {
     for (let y = 0; y < 1000; y += pixelLength) {
@@ -154,12 +211,32 @@ function setup() {
     }
 
   }
+  background(0)
 }
-
+function mousePressed() {
+  if (squaresMode == "homing") {
+    squaresMode = "flight"
+    homingProcess
+  } 
+  else if (squaresMode == "flight") {
+    squaresMode = "homing"
+  }
+}
 function draw() {
   background(0)
+  if (squaresMode == "homing") {
+    if (homingProcess < 1) {
+      homingProcess += 0.01
+    } else {
+      homingProcess = 1
+    }
+  }
+  else if (squaresMode == "flight") {
+    homingProcess = 0
+  }
+
   for (let i = 0; i < squares.length; i++) {
-    squares[i].flight();
+    squares[i].run();
     squares[i].draw();
   }
 }
