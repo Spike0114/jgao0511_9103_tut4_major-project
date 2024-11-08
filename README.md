@@ -14,4 +14,8 @@ I choose to divide the entire shape into rectangles of the same size, and then l
 The effect of my team member's code is that small squares move in an orderly manner and gradually disappear, and another effect is to use a mouse to control and change the position, color, and size of graphics
 
 ### Source of inspiration
-[Link-1](https://reas.com/youtube/)
+My inspiration comes from the following works
+[Link-01](https://reas.com/youtube/)
+[Link-02](https://reas.com/century_xxx/)
+![Pic-01](README_images/1.jpg)
+![Pic-02](README_images/2.jpg)
