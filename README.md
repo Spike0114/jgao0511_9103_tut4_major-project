@@ -1,1 +1,4 @@
-# jgao0511_9103_tut4_major-project
+# Major-project
+
+### Method
+I use Perlin noise and random values or seeds to drive animations
